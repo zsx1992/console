@@ -1,0 +1,189 @@
+<%- include('./header')%>
+<script src="../lib/dataTablePlugin.js"></script>
+<title><%= title%></title>
+
+</head>
+<style>
+    #container {
+        width: 1000px;
+        margin: 30px auto;
+    }
+
+    #search {
+        margin-bottom: 50px;
+    }
+</style>
+
+<body>
+
+    <div id="container">
+        <form class="form-inline" id="search" onsubmit="return false">
+            <div class="form-group">
+                <!-- <label class="sr-only" for="exampleInputEmail3">用户名</label> -->
+                <input type="text" class="form-control" id="username" placeholder="请输入账号">
+            </div>
+            <button type="submit" id="searchBtn" class="btn btn-success">查询</button>
+        </form>
+        <table id="tableId" class="table table-bordered">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>账户</td>
+                    <td>密码</td>
+                    <td>编辑</td>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        编辑
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="username">账号:</label>
+                        <input type="text" class="form-control input-xlarge" id="usernameModal" placeholder="请输入账号">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码:</label>
+                        <input type="text" class="form-control input-xlarge" id="pwdModal" placeholder="请输入密码">
+                    </div>
+                    <input type="text" hidden id="modelHidden">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                    <button type="button" class="btn btn-primary update">
+                        提交更改
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</body>
+<script>
+    $(document).ready(function () {
+        // 表格
+        var col = [
+            { 'mData': '_id' },
+            { 'mData': 'username' },
+            { 'mData': 'password' },
+            {
+                'mData': '_id',
+                'render': function (data, type, full) {
+                    var str = ''
+                    str += '<a  class="del btn btn-danger" data-no="' + data + '" style="width:50px;height:30px;font-size:12px">删除</a>';
+                    str += '<a  class="edit btn btn-primary" data-toggle="modal" data-target="#myModal" data-no="' + data + '" style="width:50px;height:30px;font-size:12px;margin-left:30px">编辑</a>'
+                    return str
+                }
+            }
+        ];
+        // 初始化表格
+        $('#tableId').dataTable().fnDestroy();
+        $("#tableId").initDataTable({
+            "ajax": {
+                "url": '/info/table',
+                "data": {}
+            },
+            "aoColumns": col,
+            "bSort": false,
+            "iDisplayLength": 5
+        });
+        // 删除
+        $('#tableId').on('click', '.del', function () {
+            var dataNo = $(this).data('no');
+            console.log(dataNo)
+            $.ajax({
+                type: 'get',
+                url: "/info/del",
+                data: { dataNo: dataNo },
+                success: function (res) {
+                    console.log(res)
+                    if (res.code == 1) {
+                        alert(res.msg)
+                        $('#tableId').dataTable().fnDestroy();
+                        $("#tableId").initDataTable({
+                            "ajax": {
+                                "url": '/info/table',
+                                "data": {}
+                            },
+                            "aoColumns": col,
+                            "bSort": false,
+                            "iDisplayLength": 5
+                        });
+                    } else {
+                        alert(res.msg)
+                    }
+                }
+            })
+        })
+
+        // 查询
+        $('#searchBtn').click(function () {
+            var username = $('#username').val();
+            $('#tableId').dataTable().fnDestroy();
+            $("#tableId").initDataTable({
+                "ajax": {
+                    "url": '/info/table',
+                    "data": { username: username }
+                },
+                "aoColumns": col,
+                "bSort": false,
+                "iDisplayLength": 5
+            });
+        })
+
+        // 编辑
+        $('#tableId').on('click', '.edit', function () {
+            var username = $(this).parent().siblings().eq(1).text();
+            var password = $(this).parent().siblings().eq(2).text();
+            var objId = $(this).parent().siblings().eq(0).text();
+            $('#usernameModal').val(username);
+            $('#pwdModal').val(password);
+            $('#modelHidden').val(objId)
+        })
+        $('.update').on('click', function () {
+            var username = $('#usernameModal').val();
+            var password = $('#pwdModal').val();
+            var objId = $("#modelHidden").val()
+            $.ajax({
+                type: 'get',
+                url: '/info/update',
+                data: { username: username, password: password, _id: objId },
+                success: function (res) {
+                    console.log(res)
+                    if (res.code == 1) {
+                        alert(res.msg)
+                        $('#myModal').modal('hide')
+                        $('#tableId').dataTable().fnDestroy();
+                        $("#tableId").initDataTable({
+                            "ajax": {
+                                "url": '/info/table',
+                                "data": {}
+                            },
+                            "aoColumns": col,
+                            "bSort": false,
+                            "iDisplayLength": 5
+                        });
+                    } else {
+                        alert(res.msg)
+                    }
+                }
+            })
+        })
+
+    });
+
+</script>
+
+</html>

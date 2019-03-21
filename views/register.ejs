@@ -1,0 +1,71 @@
+<%- include('./header')%>
+<title><%= title%></title>
+</head>
+    <style>
+        form{
+            width: 300px;
+            margin:100px auto 0 auto;
+        }
+        form>div:nth-child(4){
+            text-align: center;
+        }
+        form>div:nth-child(4)>button{
+            width: 200px;
+        }
+    </style>
+<body>
+    <!-- <div>注册</div> -->
+    <form onsubmit="return false">
+        <div class="form-group">
+            <label for="username">申请账号:</label>
+            <input type="text" class="form-control input-xlarge" id="username" placeholder="请输入账号">
+        </div>
+        <div class="form-group">
+            <label for="password">密码:</label>
+            <input type="password" class="form-control input-xlarge" id="password" placeholder="请输入密码">
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">确认密码:</label>
+            <input type="password" class="form-control input-xlarge" id="confirmPassword" placeholder="请输入确认密码">
+        </div>
+        <div>
+            <button type="submit" id="register" class="btn btn-success ">注册</button>
+        </div>
+        <!-- <a  id="register" class="btn btn-defaul " href="/register">注册</button> -->
+        <div style="text-align:center">
+            <a href="/">登录</a>
+        </div>
+        
+    </form>
+</body>
+<script>
+    $('#register').on('click',function(){
+        var username = $('#username').val();
+        var password = $('#password').val();
+        var confirmPassword = $("#confirmPassword").val();
+        if(password===confirmPassword){
+            $.ajax({
+                type:'post',
+                url:'/register',
+                data:{
+                    username:username,
+                    password:password,
+                    confirmPassword:confirmPassword
+                },
+                success:function(res){
+                    console.log(res)
+                    if(res.code==1){
+                        alert(res.msg)
+                        location.href = '/'
+                    }else{
+                        alert('注册失败')
+                    }
+                }
+            })
+        }else{
+            alert('两次密码不一致')
+        }
+    })
+    
+</script>
+</html>
