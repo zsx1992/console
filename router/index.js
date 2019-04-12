@@ -68,6 +68,7 @@ info.get('/',async (ctx)=>{
 let router = new Router();
 //表格初始化+分页
 router.get('/info/table',async (ctx,next)=>{
+    console.log(ctx.query)
     let limit = Number(ctx.query.length);//单页显示记录数
     let skip = Number(ctx.query.start);//每页开始序号
     let data = {};
